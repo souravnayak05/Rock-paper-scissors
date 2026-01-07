@@ -1,0 +1,96 @@
+import random
+
+
+game_state = {
+    "round": 1,
+    "user_score": 0,
+    "bot_score": 0,
+    "user_bomb_used": False,
+    "bot_bomb_used": False
+}
+
+VALID_MOVES = ["rock", "paper", "scissors", "bomb"]
+
+
+def validate_move(player, move):
+    move = move.lower().strip()
+
+    if move not in VALID_MOVES:
+        return False, "Invalid move. Round wasted."
+
+    if move == "bomb":
+        if player == "user" and game_state["user_bomb_used"]:
+            return False, "Bomb already used. Round wasted."
+        if player == "bot" and game_state["bot_bomb_used"]:
+            return False, "Bomb already used. Round wasted."
+
+    return True, move
+
+
+def resolve_round(user_move, bot_move):
+    if user_move == bot_move:
+        return "draw"
+
+    if user_move == "bomb":
+        return "user"
+    if bot_move == "bomb":
+        return "bot"
+
+    rules = {
+        "rock": "scissors",
+        "scissors": "paper",
+        "paper": "rock"
+    }
+
+    return "user" if rules[user_move] == bot_move else "bot"
+
+
+def play_game():
+    print("Rules: Best of 3 rounds. Moves: rock, paper, scissors, bomb (once). Bomb beats all. Invalid move wastes round.\n")
+
+    while game_state["round"] <= 3:
+        print(f"\nRound {game_state['round']}")
+        user_input = input("Your move: ")
+
+        valid, user_move = validate_move("user", user_input)
+        if not valid:
+            print(user_move)
+            game_state["round"] += 1
+            continue
+
+        if user_move == "bomb":
+            game_state["user_bomb_used"] = True
+
+        bot_move = random.choice(VALID_MOVES)
+        if bot_move == "bomb" and game_state["bot_bomb_used"]:
+            bot_move = random.choice(["rock", "paper", "scissors"])
+        if bot_move == "bomb":
+            game_state["bot_bomb_used"] = True
+
+        winner = resolve_round(user_move, bot_move)
+
+        print(f"User played: {user_move}")
+        print(f"Bot played: {bot_move}")
+
+        if winner == "user":
+            game_state["user_score"] += 1
+            print("Round Winner: User")
+        elif winner == "bot":
+            game_state["bot_score"] += 1
+            print("Round Winner: Bot")
+        else:
+            print("Round Result: Draw")
+
+        game_state["round"] += 1
+
+    print("\nFinal Result:")
+    if game_state["user_score"] > game_state["bot_score"]:
+        print("User Wins the Game!")
+    elif game_state["bot_score"] > game_state["user_score"]:
+        print("Bot Wins the Game!")
+    else:
+        print("Game Draw!")
+
+
+if __name__ == "__main__":
+    play_game()
